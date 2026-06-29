@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trivia CNSC · Alcaldía de Piedecuesta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --azul: #1a3a5c;
+    --azul-claro: #2a6496;
+    --dorado: #c9962a;
+    --dorado-bg: #fdf6e3;
+    --verde: #2d7a4f;
+    --verde-bg: #e8f5ee;
+    --rojo: #c0392b;
+    --rojo-bg: #fdf0ee;
+    --gris-bg: #f4f6f9;
+    --borde: #dde3ec;
+    --texto: #1a2535;
+    --texto-suave: #5a6a7e;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--gris-bg);
+    color: var(--texto);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .escudo {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* ── CABECERA ── */
+  .cabecera {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .badge-inst {
+    display: inline-block;
+    background: var(--azul);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.6px;
+    margin-bottom: 0.75rem;
+  }
+  .titulo {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    color: var(--azul);
+    line-height: 1.1;
+    margin-bottom: 0.4rem;
+  }
+  .subtitulo {
+    font-size: 13px;
+    color: var(--texto-suave);
+    line-height: 1.5;
+  }
+
+  /* ── PANTALLAS ── */
+  .pantalla { display: none; }
+  .pantalla.activa { display: block; }
+
+  /* ── CARD BASE ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── INICIO ── */
+  .api-aviso {
+    background: #fff8e6;
+    border: 1px solid #f0d080;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #7a5a00;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+  }
+  .api-aviso strong { color: #5a3f00; }
+  .api-campo {
+    margin-bottom: 1.25rem;
+  }
+  .api-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--texto-suave);
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .api-input {
+    width: 100%;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: monospace;
+    color: var(--texto);
+    background: #f9fafb;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .api-input:focus { border-color: var(--azul); background: #fff; }
+
+  .seccion-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+
+  .nivel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .nivel-btn {
+    background: #f9fafb;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .nivel-btn:hover { border-color: var(--azul); }
+  .nivel-btn.seleccionado { border: 2px solid var(--azul); background: #e8f0f8; }
+  .nivel-icono { font-size: 1.5rem; margin-bottom: 6px; }
+  .nivel-nombre { font-size: 13px; font-weight: 600; color: var(--texto); margin-bottom: 3px; }
+  .nivel-desc { font-size: 11px; color: var(--texto-suave); line-height: 1.4; }
+
+  .qty-row {
+    display: flex; gap: 8px; justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .qty-btn {
+    background: #f9fafb;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--texto);
+    transition: all 0.15s;
+  }
+  .qty-btn:hover { border-color: var(--azul); }
+  .qty-btn.seleccionado { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+  /* ── BOTÓN PRINCIPAL ── */
+  .btn-principal {
+    width: 100%;
+    background: var(--azul);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-principal:hover { background: #0f2840; }
+  .btn-principal:active { transform: scale(0.98); }
+  .btn-principal:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── JUEGO ── */
+  .progreso-fila {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .progreso-texto { font-size: 13px; color: var(--texto-suave); }
+  .puntaje-pill {
+    background: var(--dorado);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+  .barra-wrap {
+    height: 6px; background: var(--borde);
+    border-radius: 3px; margin-bottom: 1.25rem; overflow: hidden;
+  }
+  .barra-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--azul), var(--azul-claro));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .nivel-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    background: #e8f0f8; color: var(--azul);
+    padding: 3px 12px; border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .pregunta-num {
+    font-size: 11px; font-weight: 600;
+    color: var(--dorado);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.75rem;
+  }
+  .pregunta-texto {
+    font-size: 16px;
+    color: var(--texto);
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+  .opciones { display: grid; gap: 10px; margin-bottom: 1rem; }
+  .opcion-btn {
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 13px 15px;
+    text-align: left;
+    cursor: pointer;
+    display: flex; align-items: flex-start; gap: 12px;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .opcion-btn:hover:not(:disabled) {
+    border-color: var(--azul);
+    background: #f0f4f9;
+  }
+  .opcion-letra {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #f0f4f9;
+    border: 1px solid var(--borde);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    color: var(--texto-suave);
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .opcion-texto {
+    font-size: 14px; color: var(--texto);
+    line-height: 1.5; padding-top: 4px;
+  }
+  .opcion-btn.correcta { border-color: var(--verde); background: var(--verde-bg); }
+  .opcion-btn.correcta .opcion-letra { background: var(--verde); color: #fff; border-color: var(--verde); }
+  .opcion-btn.incorrecta { border-color: var(--rojo); background: var(--rojo-bg); }
+  .opcion-btn.incorrecta .opcion-letra { background: var(--rojo); color: #fff; border-color: var(--rojo); }
+  .opcion-btn:disabled { cursor: not-allowed; }
+
+  .explicacion {
+    background: #f0f4f9;
+    border-left: 3px solid var(--azul);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--texto-suave);
+    line-height: 1.65;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .explicacion.visible { display: block; }
+  .explicacion strong { color: var(--texto); }
+
+  .btn-siguiente {
+    width: 100%;
+    background: var(--azul);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-siguiente:hover { background: #0f2840; }
+  .btn-siguiente.visible { display: block; }
+
+  /* ── CARGANDO ── */
+  .cargando {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--borde);
+    border-top-color: var(--azul);
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  .cargando-texto { font-size: 13px; color: var(--texto-suave); }
+
+  /* ── RESULTADO ── */
+  .resultado-card {
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .resultado-numero {
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    color: var(--azul);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .resultado-etiqueta {
+    font-size: 13px; color: var(--texto-suave);
+    margin-bottom: 1rem;
+  }
+  .resultado-pct {
+    display: inline-block;
+    background: var(--azul);
+    color: #fff;
+    padding: 6px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+  .resultado-msg {
+    font-size: 15px;
+    color: var(--texto);
+    line-height: 1.6;
+  }
+  .acciones { display: grid; gap: 10px; }
+  .btn-secundario {
+    background: #fff;
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-secundario:hover { background: #f0f4f9; }
+
+  /* ── ERROR ── */
+  .error-msg {
+    background: var(--rojo-bg);
+    border: 1px solid #e8a09a;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--rojo);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .titulo { font-size: 1.6rem; }
+    .nivel-grid { grid-template-columns: 1fr; }
+    .pregunta-texto { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- CABECERA -->
+  <div class="cabecera">
+    <div class="escudo">🏛️</div>
+    <div class="badge-inst">CNSC · Alcaldía de Piedecuesta · Santander</div>
+    <h1 class="titulo">Trivia Concurso</h1>
+    <p class="subtitulo">Profesional Universitario Cód. 219 Grado 01<br>Secretaría de Desarrollo Social</p>
+  </div>
+
+  <!-- ══ PANTALLA 1: INICIO ══ -->
+  <div id="pantalla-inicio" class="pantalla activa">
+    <div class="card">
+
+      <div class="api-aviso">
+        <strong>Paso único:</strong> Pega aquí tu API Key de Anthropic. Solo la necesitas la primera vez — el navegador la recuerda para las próximas sesiones.
+      </div>
+
+      <div class="api-campo">
+        <label class="api-label" for="api-key-input">Tu API Key de Anthropic</label>
+        <input
+          id="api-key-input"
+          class="api-input"
+          type="password"
+          placeholder="sk-ant-api03-..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="seccion-label">Elige tu nivel</div>
+      <div class="nivel-grid">
+        <div class="nivel-btn" data-nivel="Básico">
+          <div class="nivel-icono">📖</div>
+          <div class="nivel-nombre">Básico</div>
+          <div class="nivel-desc">Definiciones y funciones del cargo</div>
+        </div>
+        <div class="nivel-btn" data-nivel="Intermedio">
+          <div class="nivel-icono">⚖️</div>
+          <div class="nivel-nombre">Intermedio</div>
+          <div class="nivel-desc">Aplicación de normas</div>
+        </div>
+        <div class="nivel-btn" data-nivel="Avanzado">
+          <div class="nivel-icono">🎯</div>
+          <div class="nivel-nombre">Avanzado</div>
+          <div class="nivel-desc">Casos prácticos y articulación normativa</div>
+        </div>
+      </div>
+
+      <div class="seccion-label">Número de preguntas</div>
+      <div class="qty-row">
+        <button class="qty-btn" data-qty="5">5</button>
+        <button class="qty-btn seleccionado" data-qty="10">10</button>
+        <button class="qty-btn" data-qty="15">15</button>
+        <button class="qty-btn" data-qty="20">20</button>
+      </div>
+
+      <div class="error-msg" id="error-inicio">
+        Por favor ingresa tu API Key y selecciona un nivel antes de continuar.
+      </div>
+
+      <button class="btn-principal" id="btn-comenzar">Comenzar trivia →</button>
+    </div>
+  </div>
+
+  <!-- ══ PANTALLA 2: JUEGO ══ -->
+  <div id="pantalla-juego" class="pantalla">
+    <div class="progreso-fila">
+      <span class="progreso-texto" id="progreso-texto">Pregunta 1 de 10</span>
+      <span class="puntaje-pill" id="puntaje-pill">0 pts</span>
+    </div>
+    <div class="barra-wrap">
+      <div class="barra-fill" id="barra-fill" style="width:0%"></div>
+    </div>
+    <div class="nivel-tag" id="nivel-tag"></div>
+
+    <div id="estado-cargando" class="cargando">
+      <div class="spinner"></div>
+      <div class="cargando-texto">Generando pregunta del concurso...</div>
+    </div>
+
+    <div id="estado-pregunta" style="display:none">
+      <div class="card">
+        <div class="pregunta-num" id="pregunta-num">Pregunta 1</div>
+        <div class="pregunta-texto" id="pregunta-texto"></div>
+      </div>
+      <div class="opciones" id="opciones"></div>
+      <div class="explicacion" id="explicacion"></div>
+      <button class="btn-siguiente" id="btn-siguiente">Siguiente pregunta →</button>
+    </div>
+  </div>
+
+  <!-- ══ PANTALLA 3: RESULTADO ══ -->
+  <div id="pantalla-resultado" class="pantalla">
+    <div class="resultado-card">
+      <div class="resultado-numero" id="resultado-numero">0/10</div>
+      <div class="resultado-etiqueta">preguntas correctas</div>
+      <div class="resultado-pct" id="resultado-pct">0%</div>
+      <div class="resultado-msg" id="resultado-msg"></div>
+    </div>
+    <div class="acciones">
+      <button class="btn-principal" id="btn-repetir">Jugar de nuevo (mismo nivel)</button>
+      <button class="btn-secundario" id="btn-cambiar">Cambiar nivel o número de preguntas</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════
+let apiKey    = '';
+let nivel     = null;
+let total     = 10;
+let numActual = 0;
+let puntaje   = 0;
+let historial = [];
+let colaPregunta = null;   // pregunta pre-cargada para móvil
+let cargandoCola = false;  // evita dobles peticiones
+
+// ══════════════════════════════════════
+//  CONTEXTO DEL CONCURSO
+// ══════════════════════════════════════
+const CONTEXTO = `MANUAL DE FUNCIONES — ALCALDÍA DE PIEDECUESTA, SANTANDER
+Cargo: Profesional Universitario Código 219 Grado 01
+Área: Secretaría de Desarrollo Social
+Dependencias: Gestión de Desarrollo Social — Atención a Víctimas y Programas de Prosperidad Social
+
+PROPÓSITO PRINCIPAL:
+Analizar y aplicar la normatividad vigente para atención, asistencia y reparación integral a las víctimas de acuerdo con los procedimientos institucionales y la normatividad vigente. También realizar la organización, desarrollo y seguimiento del programa Familias en Acción, Jóvenes en Acción y Red Unidos.
+
+FUNCIONES ESENCIALES (14 en total):
+1. Proponer, organizar y ejecutar políticas, planes, programas y proyectos orientados a la atención a población víctima de acuerdo con las necesidades identificadas para el cumplimiento de objetivos y metas establecidos según lineamientos del jefe de la dependencia.
+2. Orientar, gestionar y desarrollar los procesos y acciones requeridas para garantizar el acceso y permanencia a los programas, beneficios, reconocimientos y trámites de acuerdo con lineamientos institucionales y normatividad vigente.
+3. Desarrollar estrategias para convocar a las víctimas para la ejecución de programas y proyectos de la entidad de acuerdo con los procedimientos establecidos y la normatividad vigente.
+4. Realizar la asignación y seguimiento a las ayudas humanitarias entregadas o gestionadas por el municipio para la población víctima de acuerdo con lineamientos institucionales y normatividad vigente.
+5. Gestionar las ayudas en dinero y en especie para la población víctima del municipio de Piedecuesta de acuerdo con lineamientos institucionales y normatividad vigente.
+6. Organizar, gestionar y dar respuesta a las solicitudes de la población víctima del municipio de Piedecuesta de acuerdo con lineamientos institucionales y normatividad vigente.
+7. Verificar y mantener actualizadas las bases de datos y sistemas de información de víctimas, de acuerdo con los procedimientos establecidos y la normatividad vigente.
+8. Gestionar, organizar y realizar capacitaciones, talleres y socializaciones a la población víctima sobre los diferentes programas y herramientas para el acceso a los beneficios que les corresponden, y a la comunidad en general para fomentar procesos de convivencia.
+9. Organizar y articular las entidades del orden nacional, departamental y municipal para el desarrollo de estrategias de protección, atención, asistencia y reparación integral de las víctimas, manteniendo los principios de concurrencia, complementariedad y colaboración.
+10. Proyectar los informes, reportes, estadísticas, análisis de avances del Plan de Desarrollo Municipal, plan de acción, presupuesto municipal e información requerida según lineamientos del jefe inmediato.
+11. Presentar y elaborar informes de gestión y planes de acción del área, de acuerdo con los lineamientos y necesidades institucionales.
+12. Proyectar y conceptuar respuestas a derechos de petición, requerimientos, comunicaciones, acciones de tutela e información para entidades públicas, privadas y entes de control en los términos y parámetros establecidos por la entidad y la normatividad vigente.
+13. Participar en la implementación y seguimiento del Sistema Integrado de Gestión adoptado por la Alcaldía Municipal.
+14. Realizar la organización, desarrollo y seguimiento del programa Familias en Acción, Jóvenes en Acción y Red Unidos de acuerdo con los lineamientos institucionales y normatividad vigente.
+
+CONOCIMIENTOS BÁSICOS ESENCIALES:
+- Plan de Desarrollo Municipal
+- Normatividad de programas sociales
+- Normatividad sobre atención, asistencia y reparación integral a las víctimas del conflicto armado interno
+- Atención al ciudadano
+- Rutas y protocolos establecidos para la atención humanitaria
+- Herramientas informáticas
+
+COMPETENCIAS COMPORTAMENTALES COMUNES:
+- Aprendizaje continuo
+- Orientación a resultados
+- Orientación al usuario y al ciudadano
+- Compromiso con la organización
+- Trabajo en equipo
+- Adaptación al cambio
+
+COMPETENCIAS POR NIVEL JERÁRQUICO (Profesional universitario):
+- Aporte técnico-profesional
+- Comunicación efectiva
+- Gestión de procedimientos
+- Instrumentación de decisiones
+
+REQUISITOS DE FORMACIÓN ACADÉMICA:
+Título profesional en: Trabajo Social, Sociología, Psicología, Derecho, Ciencias Políticas, Jurisprudencia, Administración de Empresas, Administración Pública, Administración Pública Territorial, Gestión Empresarial.
+Experiencia requerida: 12 meses de experiencia profesional.
+Se exigirá tarjeta o matrícula profesional en los casos reglamentados por la Ley.
+
+ARTÍCULOS CLAVE DEL MANUAL:
+- Artículo Segundo: La Secretaría General y de las TIC garantizará la correcta aplicación y permanente actualización del manual.
+- Artículo Tercero: La Secretaría General entregará copia del manual a cada servidor en el momento de su posesión, traslado o reubicación. Los jefes inmediatos responderán por la orientación del empleado.
+- Artículo Cuarto: Los empleados en ejercicio al entrar en vigencia el acto administrativo no tendrán que cumplir los nuevos requisitos mientras permanezcan en los mismos empleos o cargos equivalentes.
+- Artículo Quinto: El manual incorpora las equivalencias del Decreto 1083 de 2015, excepto para empleos donde la norma estipula requisitos específicos.
+- Artículo Sexto: Se exigirá tarjeta profesional en casos reglamentados por la ley, además de los requisitos del manual.
+- Artículo Séptimo: Cuando se exija una profesión reglamentada, los títulos y matrículas NO podrán ser compensados por experiencia u otras calidades, salvo que la ley lo establezca.
+
+MARCO NORMATIVO APLICABLE:
+- Ley 909 de 2004: Regula el empleo público y la carrera administrativa en Colombia
+- Decreto 1083 de 2015: Decreto Único Reglamentario del Sector de Función Pública; regula equivalencias de requisitos
+- Constitución Política de Colombia, Art. 125: Empleos en entidades del Estado son de carrera; ingreso por mérito
+- Ley 1448 de 2011 (Ley de Víctimas): Marco general de atención, asistencia y reparación integral a víctimas del conflicto armado
+- Decreto 4800 de 2011: Reglamenta la Ley de Víctimas
+- Ley 1437 de 2011 (CPACA): Código de Procedimiento Administrativo y de lo Contencioso Administrativo
+- Principios aplicables: concurrencia, complementariedad y colaboración entre entidades del orden nacional, departamental y municipal
+- Programas de prosperidad social: Familias en Acción, Jóvenes en Acción, Red Unidos (administrados por el DPS - Departamento para la Prosperidad Social)`;
+
+// ══════════════════════════════════════
+//  UTILIDADES DE NAVEGACIÓN
+// ══════════════════════════════════════
+function mostrarPantalla(id) {
+  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  document.getElementById(id).classList.add('activa');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════
+//  RECUPERAR API KEY GUARDADA
+// ══════════════════════════════════════
+window.addEventListener('load', () => {
+  const guardada = localStorage.getItem('cnsc_api_key');
+  if (guardada) {
+    document.getElementById('api-key-input').value = guardada;
+  }
+});
+
+// ══════════════════════════════════════
+//  PANTALLA INICIO — INTERACCIONES
+// ══════════════════════════════════════
+document.querySelectorAll('.nivel-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nivel-btn').forEach(b => b.classList.remove('seleccionado'));
+    btn.classList.add('seleccionado');
+    nivel = btn.dataset.nivel;
+  });
+});
+
+document.querySelectorAll('.qty-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('seleccionado'));
+    btn.classList.add('seleccionado');
+    total = parseInt(btn.dataset.qty);
+  });
+});
+
+document.getElementById('btn-comenzar').addEventListener('click', () => {
+  const inputKey = document.getElementById('api-key-input').value.trim();
+  const errorEl = document.getElementById('error-inicio');
+
+  if (!inputKey || !nivel) {
+    errorEl.textContent = !inputKey
+      ? 'Por favor ingresa tu API Key de Anthropic.'
+      : 'Por favor selecciona un nivel de dificultad.';
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  errorEl.classList.remove('visible');
+  apiKey = inputKey;
+  localStorage.setItem('cnsc_api_key', apiKey);
+
+  numActual    = 0;
+  puntaje      = 0;
+  historial    = [];
+  colaPregunta = null;
+  cargandoCola = false;
+
+  mostrarPantalla('pantalla-juego');
+  document.getElementById('nivel-tag').textContent = nivel;
+  cargarPregunta();
+});
+
+// ══════════════════════════════════════
+//  LLAMADA A LA API (con timeout y reintento)
+// ══════════════════════════════════════
+async function llamarAPI(historialActual, intentos = 0) {
+  const historialTexto = historialActual.length > 0
+    ? `\n\nPreguntas ya realizadas (NO repitas estos temas):\n${historialActual.map((h, i) => `${i + 1}. ${h}`).join('\n')}`
+    : '';
+
+  const systemPrompt = `Eres un experto en concursos públicos de la Comisión Nacional del Servicio Civil (CNSC) de Colombia. Generas preguntas de selección múltiple EXCLUSIVAMENTE basadas en el siguiente manual de funciones y su marco normativo.
+
+${CONTEXTO}${historialTexto}
+
+NIVEL ACTUAL: ${nivel}
+- Básico: preguntas sobre definiciones, propósito del cargo, funciones básicas, requisitos de formación, competencias comportamentales y conocimientos básicos esenciales.
+- Intermedio: preguntas sobre aplicación de funciones específicas, artículos del Decreto 1083 de 2015, procedimientos de atención humanitaria, principios de concurrencia/complementariedad/colaboración, programas Familias en Acción, Jóvenes en Acción, Red Unidos.
+- Avanzado: casos prácticos, articulación de normas (Ley 909, Ley de Víctimas, CPACA), competencias jerárquicas aplicadas a situaciones concretas.
+
+REGLAS:
+- Una sola respuesta correcta; opciones incorrectas plausibles
+- Varía los temas: funciones, normas, competencias, requisitos, programas sociales
+- Explicación breve (máx. 2 líneas) citando la fuente
+
+Responde ÚNICAMENTE con JSON válido sin texto adicional ni markdown:
+{"pregunta":"texto","opciones":{"A":"...","B":"...","C":"...","D":"..."},"respuesta_correcta":"A","explicacion":"..."}`;
+
+  // Timeout de 25 segundos (móviles son más lentos)
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const respuesta = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: 'Genera una pregunta nueva.' }]
+      })
+    });
+    clearTimeout(timer);
+
+    if (!respuesta.ok) {
+      const err = await respuesta.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${respuesta.status}`);
+    }
+
+    const datos  = await respuesta.json();
+    const texto  = datos.content.map(b => b.text || '').join('');
+    const limpio = texto.replace(/```json|```/g, '').trim();
+    return JSON.parse(limpio);
+
+  } catch (e) {
+    clearTimeout(timer);
+    // Reintento automático una vez si falla (cubre timeouts de móvil)
+    if (intentos < 1) {
+      await new Promise(r => setTimeout(r, 1500));
+      return llamarAPI(historialActual, intentos + 1);
+    }
+    throw e;
+  }
+}
+
+// ══════════════════════════════════════
+//  PRE-CARGAR LA SIGUIENTE PREGUNTA
+//  (mientras el usuario lee la actual)
+// ══════════════════════════════════════
+async function preCargarSiguiente() {
+  if (cargandoCola || colaPregunta) return;
+  cargandoCola = true;
+  try {
+    colaPregunta = await llamarAPI([...historial]);
+  } catch (_) {
+    colaPregunta = null;
+  } finally {
+    cargandoCola = false;
+  }
+}
+
+// ══════════════════════════════════════
+//  CARGAR PREGUNTA (usa cola si existe)
+// ══════════════════════════════════════
+async function cargarPregunta() {
+  numActual++;
+
+  document.getElementById('progreso-texto').textContent = `Pregunta ${numActual} de ${total}`;
+  document.getElementById('puntaje-pill').textContent    = `${puntaje} pts`;
+  document.getElementById('barra-fill').style.width      = `${((numActual - 1) / total) * 100}%`;
+
+  document.getElementById('estado-cargando').style.display = 'block';
+  document.getElementById('estado-pregunta').style.display  = 'none';
+  document.getElementById('btn-siguiente').classList.remove('visible');
+  document.getElementById('explicacion').classList.remove('visible');
+
+  try {
+    let pregunta;
+
+    if (colaPregunta) {
+      // Usar la pregunta pre-cargada instantáneamente
+      pregunta     = colaPregunta;
+      colaPregunta = null;
+    } else {
+      // Sin cola: esperar la llamada normal
+      pregunta = await llamarAPI([...historial]);
+    }
+
+    historial.push(pregunta.pregunta.substring(0, 90));
+    mostrarPregunta(pregunta);
+
+    // Iniciar pre-carga de la siguiente (en segundo plano)
+    if (numActual < total) preCargarSiguiente();
+
+  } catch (e) {
+    document.getElementById('estado-cargando').innerHTML = `
+      <div style="color:#c0392b;font-size:13px;line-height:1.6;background:#fdf0ee;border:1px solid #e8a09a;border-radius:10px;padding:16px;">
+        <strong>Error al generar la pregunta.</strong><br>
+        Revisa tu conexión a internet y que tu API Key sea correcta.<br><br>
+        <button onclick="cargarPreguntaReintentar()" style="background:#1a3a5c;color:#fff;border:none;border-radius:8px;padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;">
+          Reintentar esta pregunta
+        </button>
+      </div>`;
+  }
+}
+
+// Reintento sin avanzar el contador
+async function cargarPreguntaReintentar() {
+  numActual--;
+  colaPregunta = null;
+  cargandoCola = false;
+  cargarPregunta();
+}
+
+// ══════════════════════════════════════
+//  MOSTRAR PREGUNTA EN PANTALLA
+//  (opciones mezcladas aleatoriamente)
+// ══════════════════════════════════════
+function mostrarPregunta(p) {
+  document.getElementById('estado-cargando').style.display = 'none';
+  document.getElementById('estado-pregunta').style.display  = 'block';
+  document.getElementById('pregunta-num').textContent  = `Pregunta ${numActual}`;
+  document.getElementById('pregunta-texto').textContent = p.pregunta;
+
+  // Texto de la opción correcta (para identificarla tras mezclar)
+  const textoCorrecto = p.opciones[p.respuesta_correcta];
+  const todasOpciones = ['A','B','C','D'].map(l => p.opciones[l]);
+
+  // Mezclar aleatoriamente — algoritmo Fisher-Yates
+  for (let i = todasOpciones.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [todasOpciones[i], todasOpciones[j]] = [todasOpciones[j], todasOpciones[i]];
+  }
+
+  const letras = ['A','B','C','D'];
+  let nuevaCorrectaLetra = '';
+
+  const contenedor = document.getElementById('opciones');
+  contenedor.innerHTML = '';
+
+  todasOpciones.forEach((texto, i) => {
+    const letraVisible = letras[i];
+    const esCorrecta   = texto === textoCorrecto;
+    if (esCorrecta) nuevaCorrectaLetra = letraVisible;
+
+    const btn = document.createElement('button');
+    btn.className = 'opcion-btn';
+    btn.innerHTML = `
+      <div class="opcion-letra">${letraVisible}</div>
+      <div class="opcion-texto">${texto}</div>`;
+    btn.addEventListener('click', () => responder(letraVisible, nuevaCorrectaLetra, p.explicacion));
+    contenedor.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════
+//  RESPONDER PREGUNTA
+// ══════════════════════════════════════
+function responder(seleccion, correcta, explicacion) {
+  // Deshabilitar todos los botones y colorear
+  document.querySelectorAll('.opcion-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    const letra = ['A', 'B', 'C', 'D'][i];
+    if (letra === correcta)                        btn.classList.add('correcta');
+    else if (letra === seleccion && seleccion !== correcta) btn.classList.add('incorrecta');
+  });
+
+  if (seleccion === correcta) puntaje++;
+  document.getElementById('puntaje-pill').textContent = `${puntaje} pts`;
+
+  const expEl = document.getElementById('explicacion');
+  const icono = seleccion === correcta ? '✓ Correcto.' : '✗ Incorrecto.';
+  expEl.innerHTML = `<strong>${icono}</strong> ${explicacion}`;
+  expEl.classList.add('visible');
+
+  const btnSig = document.getElementById('btn-siguiente');
+  btnSig.classList.add('visible');
+  btnSig.textContent = numActual >= total ? 'Ver mis resultados' : 'Siguiente pregunta →';
+}
+
+// ══════════════════════════════════════
+//  BOTÓN SIGUIENTE
+// ══════════════════════════════════════
+document.getElementById('btn-siguiente').addEventListener('click', () => {
+  if (numActual >= total) mostrarResultado();
+  else cargarPregunta();
+});
+
+// ══════════════════════════════════════
+//  PANTALLA RESULTADO
+// ══════════════════════════════════════
+function mostrarResultado() {
+  mostrarPantalla('pantalla-resultado');
+  document.getElementById('barra-fill').style.width = '100%';
+  document.getElementById('resultado-numero').textContent = `${puntaje}/${total}`;
+
+  const pct = Math.round((puntaje / total) * 100);
+  document.getElementById('resultado-pct').textContent = `${pct}% de aciertos`;
+
+  let msg;
+  if (pct >= 80) msg = '¡Excelente preparación! Vas muy bien para el concurso de la Alcaldía de Piedecuesta. 🏆';
+  else if (pct >= 60) msg = '¡Buen avance! Refuerza las funciones del cargo y la normatividad de víctimas. 💪';
+  else if (pct >= 40) msg = 'Vas por buen camino. Repasa el manual de funciones y el Decreto 1083 de 2015. 📖';
+  else msg = 'Necesitas repasar más el material. ¡Con práctica constante lo logras! 📚';
+
+  document.getElementById('resultado-msg').textContent = msg;
+}
+
+document.getElementById('btn-repetir').addEventListener('click', () => {
+  numActual    = 0;
+  puntaje      = 0;
+  historial    = [];
+  colaPregunta = null;
+  cargandoCola = false;
+  mostrarPantalla('pantalla-juego');
+  document.getElementById('nivel-tag').textContent = nivel;
+  cargarPregunta();
+});
+
+document.getElementById('btn-cambiar').addEventListener('click', () => {
+  document.querySelectorAll('.nivel-btn').forEach(b => b.classList.remove('seleccionado'));
+  nivel = null;
+  mostrarPantalla('pantalla-inicio');
+});
+</script>
+</body>
+</html>
